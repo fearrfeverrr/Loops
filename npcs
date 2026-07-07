@@ -1,0 +1,55 @@
+initNpcs = function()
+  npcs = []
+  
+  //design npc 1
+  local creep = object
+    active = true
+    sprite = "creep"
+    x = -89
+    y = 103
+    width = 16
+    height = 24
+    spoken_to = false
+  end
+  npcs.push(creep)
+  
+end
+
+talkToNpc = function(n)
+  //n is short for the npc being talked to
+  if n.sprite == "creep" then
+    postMessage("hi!")
+    postMessage("i'm a friend of 'mystery name'!")
+    postMessage("i've heard so much about you..")
+    if not n.spoken_to then
+      game_progress += 1
+      n.spoken_to = true
+    end
+  end
+  
+  
+end
+
+
+updateNpcs = function()
+  // update talk on space
+  if keyboard.press.SPACE then
+    for n in npcs
+      if messages.length == 0 and n.active and help.distance(n.x, n.y, player.x, player.y) < 36 then
+        talkToNpc(n)
+        space_pressed_this_frame = true
+        break
+      end
+    end
+  end
+  
+end
+
+
+drawNpcs = function()
+  for n in npcs
+    if n.active then
+      screen.drawSprite(n.sprite, n.x-camera, n.y-camera.y + 6, n.width, n.height)
+    end
+  end
+end
