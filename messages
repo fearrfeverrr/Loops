@@ -1,0 +1,49 @@
+// To use this code, make sure you call "initMessages()" in your "init" function,
+// "updateMessages()" in your "update" function, and "drawMessages()" in
+// your draw function.
+
+// You can create a new alert/message on screen for the user at any time by
+// calling "postMessage('Your text goes here')"
+
+initMessages = function()
+  messages = []
+end
+
+postMessage = function(msg, duration = 4)
+  local message = object
+    text = msg
+    delay_offset = 0
+    y_spacing = 24
+  end
+  for m in messages
+    m.delay_offset += m.y_spacing
+  end
+  messages.push(message)
+end 
+
+updateMessages = function()
+  if (not space_pressed_this_frame) and messages.length > 0 and keyboard.press.SPACE then
+    messages[0].delete = true
+  end
+  help.removeDeleted(messages)
+end
+
+
+drawMessages = function()
+  screen.setFont("PixelArial")
+  screen.drawText("", 0, 0, 0, "#131313")    // make sure font is always loaded
+  if messages.length > 0 then
+    screen.fillRoundRect(0, -50, 320, 20, 8, "rgba(0, 0, 0, 0.5)")
+    local m = messages[0]
+    screen.drawText(m.text, 0, -50, 5, "#131313")
+    screen.drawText("Press 'space' to progress", 0, -70, 4, "rgba(255,255,255," + help.getFlashValue() + ")")
+  else
+    // check for near by npcs and indicate if they are close enough to talk
+    for n in npcs
+      if help.distance(n.x, n.y, player.x, player.y) < 30 then
+        screen.drawText("Press 'space' to talk to NPC", 0, -70, 4, "rgba(255,255,255," + help.getFlashValue() + ")")
+        break
+      end
+    end
+  end
+end
