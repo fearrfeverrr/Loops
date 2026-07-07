@@ -1,0 +1,55 @@
+initCollectibles = function()
+  collectibles = []
+  coll_rotation = 0
+  coll_rotation_direction = 1 
+  // spawn collectibles here
+  spawnCollectible("map", -232, 56)
+end
+
+spawnCollectible = function(name, x, y)
+  local c = object 
+    name = name
+    x = x
+    y = y
+    width = 10
+    height = 10
+    touching_player = false
+  end
+  collectibles.push(c)
+end
+
+updateCollectibles = function()
+  // collect if touching player
+  for c in collectibles
+    if help.distance(player.x, player.y, c.x, c.y) < 12 then
+      if addToInventory(c.name) then
+      postMessage("Cursed" + c.name + " has been added to your inventory!")
+      c.delete = true
+      game_progress += 1
+    elsif not c.touching_player then
+      postMessage("Your inventory is full :(!")
+    end
+    c.touching_player = true
+  else
+      c.touching_player = false
+  end
+ end
+ help.removeDeleted(collectibles)
+ // update rotation animation
+ coll_rotation += 0.3 * coll_rotation_direction
+ if coll_rotation > 14 then
+   coll_rotation = 14
+   coll_rotation_direction = -1
+ elsif coll_rotation < -14 then
+   coll_rotation = -14
+   coll_rotation_direction = 1
+ end
+end
+
+drawCollectibles = function()
+  screen.setDrawRotation(coll_rotation)
+  for c in collectibles
+    screen.drawSprite(c.name, c.x-camera.x, c.y-camera.y, c.width, c.height)
+  end
+  screen.setDrawRotation(0)
+end
