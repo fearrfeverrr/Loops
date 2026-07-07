@@ -1,0 +1,127 @@
+initPlayer = function()
+  player = object
+    x = -216
+    y = 123
+    width = 16
+    height = 24
+    speed = 1
+    facing = 2
+    walking = false
+    animation_frame = 0
+  end
+  player.y_offset = player.height/2-1
+end
+
+updatePlayer = function()
+  player.walking = false
+  
+  // up/down movement
+  local new_y = player.y
+  if keyboard.UP or gamepad.UP then
+    new_y += player.speed
+    player.facing = 3
+    player.walking = true
+  end
+  
+  if keyboard.DOWN or gamepad.DOWN then
+    new_y -= player.speed
+    player.facing = 0
+    player.walking = true
+  end
+  
+  if not isColliding(player.x, new_y) then
+    player.y = new_y
+  end
+  
+  // left/right movement
+  local new_x = player.x
+  if keyboard.RIGHT or gamepad.RIGHT then
+    new_x += player.speed
+    player.facing = 2
+    player.walking = true
+  end
+  
+  if keyboard.LEFT or gamepad.LEFT then
+    new_x -= player.speed
+    player.facing = 1
+    player.walking = true
+  end
+  
+  if not isColliding(new_x, player.y) then
+    player.x = new_x
+  end
+  
+  // progress the walking cycle
+  player.animation_frame += 0.1
+  player.animation_frame = player.animation_frame % 4
+  
+  // set to standing sprite if not moving
+  if not player.walking then
+    player.animation_frame = 1
+  end
+end
+
+
+drawPlayer = function()
+  sprites["player"].setFrame(player.facing*4 + floor(player.animation_frame))
+  screen.drawSprite("player", player.x - camera.x, player.y + player.y_offset - camera.y, player.width, player.height)
+end
+
+isColliding = function(test_x, test_y)
+  // check edge of world
+  if abs(test_x) > world.draw_width/2 then
+    return true
+  end
+  if abs(test_y) > world.draw_height/2 then
+    return true
+  end
+
+  // check collisions with NPCs
+  for n in npcs
+    if n.active and help.distance(test_x, test_y, n.x, n.y) < 16 then
+      return true
+    end
+  end
+
+  // define local variables
+  local back_map_name = ""
+  local fore_map_name = ""
+  local x = test_x             // position on the specific map to check
+  local y = test_y
+  
+  // work out which maps to check and which position on maps to check
+  if test_x < 0 then
+    if test_y < 0 then
+      back_map_name = "bottom_left_back"
+      fore_map_name = "bottom_left_fore"
+      x += world.x_off
+      y += world.y_off
+    else
+      back_map_name = "top_left_back"
+      fore_map_name = "top_left_fore"
+      x += world.x_off
+      y -= world.y_off 
+    end
+  else
+    if test_y < 0 then
+      back_map_name = "bottom_right_back"
+      fore_map_name = "bottom_right_fore"
+      x -= world.x_off
+      y += world.y_off
+    else
+      back_map_name = "top_right_back"
+      fore_map_name = "top_right_fore"
+      x -= world.x_off
+      y -= world.y_off    
+    end    
+  end  
+
+  // check collisions
+  local back_tile_name = help.checkCollision(x, y, back_map_name, world.map_width, world.map_height)
+  local fore_tile_name = help.checkCollision(x, y, fore_map_name, world.map_width, world.map_height)
+  if (back_tile_name.startsWith("collision") or fore_tile_name.startsWith("collision")) then
+    return true
+  else
+    return false
+  end
+end
