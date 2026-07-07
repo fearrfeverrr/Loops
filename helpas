@@ -1,0 +1,209 @@
+
+//
+// This file contains functions that are useful
+// for a wide range of tasks. These are called
+// "helper functions" or "utility functions"
+//
+
+help = object end
+
+ 
+// takes an angle in degrees and returns a vector in the form of a list [x, y]
+// the elements [x, y] of this direction vector can then be multiplied by a
+// certain speed (in pixels per frame) to move an entity on the screen
+help.angleToVector = function(angle)
+  return [cosd(angle), sind(angle)]
+end
+
+// discover the name of the sprite portion at an (x, y) position in the world
+// NOTE: the draw width/height is not the width of the map, but how width/high
+// you draw it in the game
+help.checkCollision = function(x, y, map_name, map_draw_width, map_draw_height)
+  local grid_x = floor((x + map_draw_width / 2) / (map_draw_width / maps[map_name].width))
+  local grid_y = floor((y + map_draw_height / 2) / (map_draw_height / maps[map_name].height))
+  return maps[map_name].get(grid_x, grid_y)
+end
+
+// checks to see if the mouse is touching/hovering over a rectangle
+// useful for detecting hover/click on buttons
+help.checkRectMouseHover = function(x, y, width, height)
+  local hover = true
+  if mouse.x < (x - width/2) then hover = false end
+  if mouse.x > (x + width/2) then hover = false end
+  if mouse.y < (y - height/2) then hover = false end
+  if mouse.y > (y + height/2) then hover = false end
+  return hover
+end
+
+// returns a random item from a list
+help.choose = function(lst)
+  local index = random.nextInt(lst.length)
+  return lst[index]
+end
+
+// keep a value within a set range
+// useful for keeping a player on the screen etc.
+// NOTE: returns the new value, does not automatically change it
+help.clamp = function(value, lower_limit, upper_limit)
+  if lower_limit > upper_limit then
+    local old_lower_limit = lower_limit
+    lower_limit = upper_limit
+    upper_limit = old_lower_limit
+  end
+  local val = max(value, lower_limit)
+  val = min(val, upper_limit)
+  return val
+end
+
+// takes screen co-ordinates (not map coord) and replaces the map square with a blank
+// useful for removing items from the map when collecting gems etc.
+help.deleteMapItem = function(x, y, map_name, map_draw_width, map_draw_height)
+  local grid_x = floor((x + map_draw_width / 2) / (map_draw_width / maps[map_name].width))
+  local grid_y = floor((y + map_draw_height / 2) / (map_draw_height / maps[map_name].height))
+  maps[map_name].set(grid_x, grid_y, " ")
+end
+
+// takes screen co-ordinates (not map coord) and replaces the map square with a blank
+// useful for removing items from the map when collecting gems etc.
+help.deleteMapItem = function(x, y, map, map_draw_width, map_draw_height)
+  local grid_x = floor((x + map_draw_width / 2) / (map_draw_width / maps[map].width))
+  local grid_y = floor((y + map_draw_height / 2) / (map_draw_height / maps[map].height))
+  maps[map].set(grid_x, grid_y, " ")
+end
+
+// find the distance between object 1 and object 2
+// useful for a simple circular collision detection
+help.distance = function(x1, y1, x2, y2)
+  local a = x2 - x1
+  local b = y2 - y1
+  local c = sqrt(pow(a, 2) + pow(b, 2))
+  return c
+end
+
+// returns a number that moves smoothly between .4 and 1
+// useful for flashing text if used to set the alpha each frame
+help.getFlashValue = function(seconds_per_flash = 1.5)
+  return pow(cos(system.time()/1000*PI/seconds_per_flash), 2) * 0.6 + .4
+end
+
+// finds the angle in degrees from point 1 to point 2
+help.getAngle = function(x1, y1, x2, y2)
+  return atan2d(y2 - y1, x2 - x1)
+end
+
+// returns a number that moves smoothly between .4 and 1
+// very useful for flashing text if used to set the alpha each frame
+help.getFlashValue = function(seconds_per_flash = 1.5)
+  return pow(cos(system.time()/1000*PI/seconds_per_flash), 2) * 0.6 + .4
+end
+
+// slowly transition a variable to value for smooth tween effects
+help.moveToward = function(current_value, target, amount)
+  local new_value = 0
+  if current_value == target then
+    new_value = current_value
+  elsif current_value < target then
+    new_value = current_value + amount
+    if new_value > target then new_value = target end
+  elsif current_value > target then
+    new_value = current_value - amount
+    if new_value < target then new_value = target end  
+  end
+  return new_value
+end
+
+// sets the length of a movement vector to 1, making it a direction vector
+// useful for directions as it can then be multiplied by an object's speed
+help.normalize = function(vector)
+  local x = vector[0]
+  local y = vector[1]
+  local v = sqrt(pow(x, 2) + pow(y, 2))
+  local new_x = x / v
+  local new_y = y / v
+  return [new_x, new_y]
+end
+
+// print co-ordinates on left click (presumes camera system in place)
+help.printMouseClicks = function()
+  if mouse.press and mouse.left then
+    print("----------------------------------")
+    print("Mouse click:")
+    print("x: " + round(mouse.x + camera.x))
+    print("y: " + round(mouse.y + camera.y))
+    print("----------------------------------")
+  end
+end
+
+// print co-ordinates on left click on map page (specific for map in this game)
+help.printMapMouseClicks = function()
+  if mouse.press and mouse.left then
+    print("----------------------------------")
+    print("Mouse click:")
+    print("x: " + round(world.draw_width/screen.width * mouse.x))
+    print("y: " + round(world.draw_height/screen.height * mouse.y))
+    print("----------------------------------")
+  end
+end
+
+// returns a random number (float/with decimals) within the range [low, high)
+help.randRange = function(low, high)
+  return (high - low) * random.next() + low
+end
+
+// removes objects from a given list that have a property "delete = true"
+// useful for deleting enemies, bullets etc. run at the end of each frame
+// then simply set object.delete = true to ensure it's deletion
+help.removeDeleted = function(object_list)
+  for i = object_list.length - 1 to 0 by -1
+    if object_list[i].delete then 
+      object_list.removeAt(i) 
+    end
+  end
+end
+
+// returns the sign of a number: -1 for negative numbers, 0 for 0
+// and 1 for positive
+help.sign = function(num)
+  if num < 0 then return -1 end
+  if num > 0 then return 1 end
+  return 0
+end
+
+// find the diagonal length of a vector
+help.vectorLength = function(x, y)
+  return sqrt(pow(x, 2) + pow(y, 2))
+end
+
+// takes a (direction or movement) vector in the form of a list [x, y]
+// returns an angle in degrees
+help.vectorToAngle = function(vec)
+  return atan2d(vec[1], vec[0])
+end
+
+// makes the object wrap around the screen when moving off the edge
+// note: object must have x and y fields (variables)
+help.wrap = function(obj, leeway = 0)
+  if obj.x + leeway < -screen.width/2 then
+    obj.x = screen.width/2 + leeway
+  elsif obj.x - leeway > screen.width/2 then
+    obj.x = -screen.width/2 - leeway
+  end 
+  if obj.y + leeway < -screen.height/2 then
+    obj.y = screen.height/2 + leeway
+  elsif obj.y - leeway > screen.height/2 then
+    obj.y = -screen.height/2 - leeway
+  end 
+end
+
+// calculate the map grid position of a specific x value in the world
+help.xpos_to_grid = function(x, map_columns, map_draw_width)
+  local column_draw_width = map_draw_width / map_columns
+  return floor((x + map_draw_width / 2) / column_draw_width)
+end
+
+// calculate the map grid position of a specific y value in the world
+help.ypos_to_grid = function(y, map_rows, map_draw_height)
+  local row_draw_height = map_draw_height / map_rows
+  return floor((y + map_draw_height / 2) / row_draw_height)
+end
+
