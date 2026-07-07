@@ -1,0 +1,57 @@
+checkInventory = function(item)
+  if inventory.contents.contains(item) then
+    return true
+  else 
+    return false
+  end
+end
+
+addToInventory = function(item) 
+  if inventory.contents.length < inventory.max_items then
+    inventory.contents.push(item)
+    return true
+  else
+    return false
+  end
+end
+
+removeFromInventory = function(item)
+  inventory.contents.removeElement(item)
+end
+
+initInventory = function()
+  inventory = object
+    x = -118
+    y = -30
+    width = 100
+    height = 100
+    max_items = 16
+    contents = [
+      //"map",
+    ]
+    displaying = false
+  end
+end
+
+updateInventory = function()
+  if keyboard.press.I then
+    inventory.displaying = not inventory.displaying
+  end
+end
+
+drawInventory = function()
+  screen.setFont("PixelArial")
+  if inventory.displaying then
+    screen.fillRoundRect(inventory.x, inventory.y, inventory.width, inventory.height, 10, "rgba(0, 0, 0, 0.5)")
+    for i=0 to inventory.contents.length
+      if i == inventory.max_items then break end
+      local x = inventory.x - 30 + 20 * (i % 4)
+      local y = inventory.y + 30 - 20 * floor(i / 4)
+      screen.drawSprite(inventory.contents[i], x, y, 16, 16)
+    end
+    if inventory.contents.length == 0 then
+      screen.drawText("empty", inventory.x, inventory.y, 6, "rgba(255,255,255,0.5")
+    end
+  end
+  
+end
