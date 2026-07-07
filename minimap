@@ -1,0 +1,58 @@
+initMinimap = function()
+  minimap = object
+    active = false
+    toggle_key = "M"
+    screen_border_color = "rgba(255,255,255, 0.6)"
+  end
+end
+
+updateMinimap = function()
+  if keyboard.press[minimap.toggle_key] then
+    if minimap.active then
+      minimap.active = false
+    elsif checkInventory("map") then
+      minimap.active = true
+    else
+      postMessage("You do not have a map.")
+    end
+  end
+end
+
+drawMinimap = function()
+  if minimap.active then
+    screen.clear()
+      // top left
+    screen.drawMap("top_left_back", -screen.width/4, screen.height/4, screen.width/2, screen.height/2)
+    screen.drawMap("top_left_fore", -screen.width/4, screen.height/4, screen.width/2, screen.height/2)
+    // top right
+    screen.drawMap("top_right_back", screen.width/4, screen.height/4, screen.width/2, screen.height/2)
+    screen.drawMap("top_right_fore", screen.width/4, screen.height/4, screen.width/2, screen.height/2)
+    // bottom left
+    screen.drawMap("bottom_left_back", -screen.width/4, -screen.height/4, screen.width/2, screen.height/2)
+    screen.drawMap("bottom_left_fore", -screen.width/4, -screen.height/4, screen.width/2, screen.height/2)
+    // bottom right
+    screen.drawMap("bottom_right_back", screen.width/4, -screen.height/4, screen.width/2, screen.height/2)
+    screen.drawMap("bottom_right_fore", screen.width/4, -screen.height/4, screen.width/2, screen.height/2)
+
+
+    // draw the position dot
+    local dot_x = player.x/world.draw_width*screen.width
+    local dot_y = player.y/world.draw_height*screen.height
+    sprites["player"].setFrame(3)
+    screen.drawSprite("player", dot_x, dot_y+4, 8, 12)
+    // draw screen bounds
+    local cam_x = camera.x/world.draw_width*screen.width
+    local cam_y = camera.y/world.draw_height*screen.height
+    local view_width = screen.width/world.draw_width*screen.width
+    local view_height = screen.height/world.draw_height*screen.height
+    screen.setLineWidth(1)
+    screen.drawRect(cam_x, cam_y, view_width, view_height, minimap.screen_border_color)
+    screen.setLineWidth(1)
+    
+    // draw the text
+    screen.setFont("VeniceClassic")
+    screen.drawText("World Map", -1, 89, 16, "#000")
+    screen.drawText("World Map", 0, 90, 16, "#FFF")
+    screen.drawText("Press 'M' to resume.", 0, -92, 12, "#FFF")
+  end
+end
